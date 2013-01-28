@@ -1,0 +1,96 @@
+#!/bin/sh
+
+# The sed expression here replaces all backslashes by forward slashes.
+# This helps our Windows users, while not bothering our Unix users.
+export GITFLOW_DIR=$(dirname "$(echo "$0" | sed -e 's,\\,/,g')")
+
+usage() 
+{
+	echo "usage: gitrelease <version>"
+}
+
+main() 
+{
+	# Load common git functionality
+	. "$GITFLOW_DIR/common/gitfunctions"
+
+	# Check we have two parameters
+	if [ $# -lt 1 ]; 
+	then
+		warn "error: missing arguments"
+		usage
+		exit 1
+	fi
+
+	# Read arguments
+	TAGGED_VERSION=$1
+	TAGGED_TEMP_BRANCH="$TAGGED_VERSION-Temp"
+
+	# Checks
+	require_git_repo
+	require_clean_working_tree
+
+        # Get current branch name
+        local current_branch=$(echo "$(git_current_branch)" | grep "^$PREFIX")
+
+	# Pull current branch from origin including tags
+	echo "Fetching tags"
+	git fetch --tags
+
+	# Check tagged version does exist
+	if ! git_tag_exists $TAGGED_VERSION; 
+	then
+		git tag -a -m "Created version $TAGGED_VERSION." $TAGGED_VERSION
+	fi
+
+	# Check tagged temp branch does not exist
+	if git_tag_exists $TAGGED_TEMP_BRANCH; 
+	then
+		die "error: version temp branch name exists"
+	fi
+
+	# Check we are on master
+	if [ "$current_branch" != "master" ]; 
+	then
+		# If not, checkout to master
+		git checkout master || \
+			die "error: could not checkout master"
+	fi
+
+	# Fetch latest
+	echo "Pulling branch master"
+	git pull origin master || \
+		die "error: could not pull master"
+
+	# Checkout to tag
+	echo "Creating temp branch from tag commit ref"
+	git checkout -f $TAGGED_VERSION
+
+	# Create new branch from tag
+	git branch $TAGGED_TEMP_BRANCH
+
+	# Checkout back to master
+	git checkout -f master
+
+	# Attempt to merge tagged version into master
+	echo "Releasing $TAGGED_VERSION to 'master'"
+	git merge -q --no-ff -m "$TAGGED_VERSION" $TAGGED_TEMP_BRANCH
+
+	# Push branch
+	echo "Pushing $TAGGED_VERSION to origin master including tags"
+	git push origin master || \
+		die "error: could not push to origin master"
+	git push --tags || \
+		die "error: could not push tags to origin"
+
+	# Clean up temp tag
+	git branch -D $TAGGED_TEMP_BRANCH
+
+	# Checkout to back to branch
+	git checkout $current_branch
+
+	# Finished
+	echo "Released $TAGGED_VERSION to master"
+}
+
+main "$@"

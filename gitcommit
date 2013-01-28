@@ -1,0 +1,37 @@
+#!/bin/sh
+
+# The sed expression here replaces all backslashes by forward slashes.
+# This helps our Windows users, while not bothering our Unix users.
+export GITFLOW_DIR=$(dirname "$(echo "$0" | sed -e 's,\\,/,g')") 
+
+usage() 
+{
+	echo "usage: gitcommit <story-id> \"<commit-msg>\""
+}
+
+main() 
+{
+	# Load common git functionality
+	. "$GITFLOW_DIR/common/gitfunctions"
+
+	# Check we have two parameters
+	if [ $# -lt 2 ]; 
+	then
+		warn "error: missing arguments"
+		usage
+		exit 1
+	fi
+
+	# Read arguments
+	STORY_ID=$1
+	COMMIT_MSG=$2
+
+	# Checks
+	require_git_repo
+
+	# Fetch latest
+	git commit -a -m "[#$STORY_ID] $COMMIT_MSG" || \
+		die "error: could not commit"
+}
+
+main "$@"

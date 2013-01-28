@@ -1,0 +1,89 @@
+#!/bin/sh
+
+# The sed expression here replaces all backslashes by forward slashes.
+# This helps our Windows users, while not bothering our Unix users.
+export GITFLOW_DIR=$(dirname "$(echo "$0" | sed -e 's,\\,/,g')")
+
+usage() 
+{
+	echo "usage: gitstage <version>"
+}
+
+main() 
+{
+	# Load common git functionality
+	. "$GITFLOW_DIR/common/gitfunctions"
+
+	# Check we have two parameters
+	if [ $# -lt 1 ]; 
+	then
+		warn "error: missing arguments"
+		usage
+		exit 1
+	fi
+
+	# Read arguments
+	DEV_VERSION=$1
+
+	# Checks
+	require_git_repo
+	require_clean_working_tree
+	require_tag_absent "$DEV_VERSION"
+
+	# Get current branch name
+	local current_branch=$(echo "$(git_current_branch)" | grep "^$PREFIX")
+
+	# Pulling current branch
+	echo "Pulling $current_branch"
+	git pull origin $current_branch
+
+	# Pushing all current branch changes
+	echo "Pushing $current_branch"
+	git push origin #current_branch
+
+	# Check we are on staging
+	if [ "$current_branch" != "staging" ]; 
+	then
+		# If not, checkout to dev
+		git checkout staging || \
+			die "error: could not checkout staging"
+	fi
+
+	# Fetch latest
+	echo "Pulling branch 'staging'"
+	git pull origin staging || \
+		die "error: could not pull staging"
+
+	# Attempt to merge dev into staging
+	echo "Releasing $DEV_VERSION to staging"
+	git merge -q --no-ff -m "$DEV_VERSION staged" refs/heads/$current_branch
+
+	# Does staging now contain current branch?
+	if ! git_is_branch_merged_into "$current_branch" "staging"; then
+		warn "warn: Suspecting merge conflicts"
+		die "warn: Resolve conflicts and re-run gitstage"
+	fi
+
+	# Merge has been successful
+	# Tag release
+	git tag -am "Creating version $DEV_VERSION." $DEV_VERSION
+	echo "Tagging $DEV_VERSION"
+
+	# Push branch
+	echo "Pushing staging to origin staging"
+	git push origin staging || \
+		die "error: could not push to origin staging"
+
+	# Push tag
+	echo "Pushing tags"
+	git push --tags || \
+		die "error: could not push tags to origin"
+
+	# Checkout to dev
+	git checkout $current_branch
+
+	# Finished
+	echo "Released $DEV_VERSION to staging"
+}
+
+main "$@"
