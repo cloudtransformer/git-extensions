@@ -5,12 +5,18 @@ A collection of bash scripts to help with day to day use of Git created by [Dan 
 ## Service Hooks
 
 In order to take advantage of commit references within commit messages and amending Pivotal Tracker story states, you will need to setup up a service hook between your Git repository and Pivotal Tracker account. Take a look at Dan Podsedly's [blog post](http://pivotallabs.com/users/dan/blog/articles/1304-github-service-hook-for-pivotal-tracker) for more information on how to setup service hooks for Pivotal Tracker and GitHub.
+
+## Installation
+
+If you are using Mac OSX, then run the following command from the root of the repository using terminal or any other command line interface. This will copy the common folder and five scripts to your bin folder and make them globally executable.
+
+	./install/mac
 	
 ## Usage
 
 ### gitcommit
 
-The commit script performs a commit. It outputs a commit message which could integrate with Pivotal Tracker if service hooks are setup. A comment on the story specified will be left, referencing the commit. The Pivotal Tracker story will be started if not yet started. The commmit script will only commit staged files.
+The commit script performs a commit. It outputs a commit message which could integrate with Pivotal Tracker if service hooks are setup. A comment on the story specified will be left, referencing the commit. The Pivotal Tracker story will be started if not yet started. The commit script will only commit staged files.
 	
 	gitcommit <story-id> "<commit-msg>"
 

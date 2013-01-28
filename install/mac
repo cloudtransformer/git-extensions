@@ -1,0 +1,13 @@
+sudo mkdir /usr/sbin/common
+sudo cp common/gitfunctions /usr/sbin/common/gitfunctions
+sudo cp gitcommit /usr/sbin/gitcommit
+sudo cp gitdeliver /usr/sbin/gitdeliver
+sudo cp gitfix /usr/sbin/gitfix
+sudo cp gitrelease /usr/sbin/gitrelease
+sudo cp gitstage /usr/sbin/gitstage
+sudo chmod a+x /usr/sbin/common/gitfunctions
+sudo chmod a+x /usr/sbin/gitcommit
+sudo chmod a+x /usr/sbin/gitdeliver
+sudo chmod a+x /usr/sbin/gitfix
+sudo chmod a+x /usr/sbin/gitrelease
+sudo chmod a+x /usr/sbin/gitstage
