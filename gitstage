@@ -56,7 +56,7 @@ main()
 
 	# Attempt to merge dev into staging
 	echo "Releasing $DEV_VERSION to staging"
-	git merge -q --no-ff -m "$DEV_VERSION staged" refs/heads/$current_branch
+	git merge -q --no-ff -m "[Stage] $DEV_VERSION" refs/heads/$current_branch
 
 	# Does staging now contain current branch?
 	if ! git_is_branch_merged_into "$current_branch" "staging"; then

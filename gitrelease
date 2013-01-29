@@ -74,7 +74,7 @@ main()
 
 	# Attempt to merge tagged version into master
 	echo "Releasing $TAGGED_VERSION to 'master'"
-	git merge -q --no-ff -m "$TAGGED_VERSION" $TAGGED_TEMP_BRANCH
+	git merge -q --no-ff -m "[Release] $TAGGED_VERSION" $TAGGED_TEMP_BRANCH
 
 	# Push branch
 	echo "Pushing $TAGGED_VERSION to origin master including tags"
