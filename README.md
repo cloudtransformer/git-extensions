@@ -8,9 +8,13 @@ In order to take advantage of commit references within commit messages and amend
 
 ## Installation
 
-If you are using Mac OSX, then run the following command from the root of the repository using terminal or any other command line interface. This will copy the common folder and five scripts to your bin folder and make them globally executable.
+If you are using Mac OSX, then run the following command from the root of the repository using terminal or any other command line interface. This will copy the common folder and five scripts to your bin folder.
 
 	./install/mac
+	
+If you are using Windows, then run the following command from the root of the repository using Git Bash or any other command line interface. This will copy the common folder and five scripts to your System32 folder. Please note that the extension scripts will only run under applications such as Git Bash.
+
+	install\windows.bat
 	
 ## Usage
 
