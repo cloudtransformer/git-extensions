@@ -25,22 +25,24 @@ main()
 	# Read arguments
 	TAGGED_VERSION=$1
 	TAGGED_TEMP_BRANCH="$TAGGED_VERSION-Temp"
+	TEMP_TAGGED="$TAGGED_VERSION"
 
 	# Checks
 	require_git_repo
 	require_clean_working_tree
 
-        # Get current branch name
-        local current_branch=$(echo "$(git_current_branch)" | grep "^$PREFIX")
+	# Get current branch name
+	local current_branch=$(echo "$(git_current_branch)" | grep "^$PREFIX")
 
 	# Pull current branch from origin including tags
 	echo "Fetching tags"
 	git fetch --tags
 
-	# Check tagged version does exist
+	# Check tagged version does exist, checkout to dev instead
 	if ! git_tag_exists $TAGGED_VERSION; 
 	then
-		git tag -a -m "Created version $TAGGED_VERSION." $TAGGED_VERSION
+		TEMP_TAGGED="$TAGGED_VERSION"
+		TAGGED_VERSION="dev"
 	fi
 
 	# Check tagged temp branch does not exist
@@ -74,10 +76,16 @@ main()
 
 	# Attempt to merge tagged version into master
 	echo "Releasing $TAGGED_VERSION to 'master'"
-	git merge -q --no-ff -m "$TAGGED_VERSION" $TAGGED_TEMP_BRANCH
+	git merge -q --no-ff -m "$TEMP_TAGGED" $TAGGED_TEMP_BRANCH
+	
+	# If we haven't tagged the release yet, make sure we do
+	if [ "$TAGGED_VERSION" == "dev" ];
+	then
+		git tag -a -m "Created version $TEMP_TAGGED." $TEMP_TAGGED
+	fi
 
 	# Push branch
-	echo "Pushing $TAGGED_VERSION to origin master including tags"
+	echo "Pushing $TEMP_TAGGED to origin master including tags"
 	git push origin master || \
 		die "error: could not push to origin master"
 	git push --tags || \
@@ -90,7 +98,7 @@ main()
 	git checkout $current_branch
 
 	# Finished
-	echo "Released $TAGGED_VERSION to master"
+	echo "Released $TEMP_TAGGED to master"
 }
 
 main "$@"
