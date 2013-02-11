@@ -30,7 +30,7 @@ main()
 	require_git_repo
 
 	# Fetch latest
-	git commit -a -m "[#$STORY_ID] $COMMIT_MSG" || \
+	git commit -m "[#$STORY_ID] $COMMIT_MSG" || \
 		die "error: could not commit"
 }
 
